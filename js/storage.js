@@ -1,0 +1,4 @@
+const KEY='bubu-kitchen-v1';
+export const defaults={ingredients:[],methods:[],servings:2,time:30,flavor:'家常',excluded:[],favorites:[],reduced:false,apiKey:'',customRecipes:[]};
+export function load(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(!s)return structuredClone(defaults);const r={...structuredClone(defaults),...s};for(const k of ['ingredients','methods','excluded','favorites'])r[k]=Array.isArray(r[k])?r[k].filter(x=>typeof x==='string'):[];r.customRecipes=Array.isArray(r.customRecipes)?r.customRecipes:[];r.apiKey=typeof r.apiKey==='string'?r.apiKey.trim():'';r.servings=Math.min(5,Math.max(1,Number(r.servings)||2));r.time=[15,30,60,0].includes(Number(r.time))?Number(r.time):30;return r}catch{return structuredClone(defaults)}}
+export function save(state){try{localStorage.setItem(KEY,JSON.stringify(state));return true}catch{return false}}

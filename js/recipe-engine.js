@@ -1,0 +1,6 @@
+import {recipes} from './recipe-data.js';
+const aliases={'蛋':'雞蛋','雞':'雞肉','豬':'豬肉','牛':'牛肉','蕃茄':'番茄','香菇':'菇類','蘑菇':'菇類','鮮奶':'牛奶','米飯':'白飯','飯':'白飯','馬鈴薯':'馬鈴薯','土豆':'馬鈴薯'};
+export const normalize=s=>aliases[s.trim()]||s.trim();
+export const splitIngredients=s=>[...new Set(s.split(/[,，、\n;；]+/).map(normalize).filter(Boolean))];
+const allergens={'奶':['牛奶','奶油','起司'],'牛奶':['牛奶','奶油','起司'],'蛋':['雞蛋'],'花生':['花生','花生油'],'大豆':['豆腐','醬油'],'黃豆':['豆腐','醬油'],'麩質':['麵條','麵粉','醬油']};
+export function recommend(p){const have=new Set(p.ingredients.map(normalize));if(!have.size||!p.methods.length)return [];return recipes.filter(r=>r.methods.every(m=>p.methods.includes(m))).filter(r=>!p.excluded.some(e=>r.ingredients.some(i=>[normalize(e),...(allergens[e]||[])].some(x=>i.name.includes(x)||x.includes(i.name))))).filter(r=>!p.time||r.cookingTime<=p.time).map(r=>{const available=r.ingredients.filter(i=>have.has(normalize(i.name)));const missing=r.ingredients.filter(i=>!have.has(normalize(i.name)));const match=available.length/r.ingredients.length;return {...r,available,missing,match,score:match*40+25+15+(r.flavor.includes(p.flavor)?10:0)+10/(missing.length+1),requestedServings:p.servings}}).filter(r=>r.available.length>0&&r.missing.length<=3).sort((a,b)=>b.score-a.score||a.cookingTime-b.cookingTime).slice(0,3)}
